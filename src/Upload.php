@@ -18,6 +18,9 @@ class Upload {
     {
         $this->files = $files;
         $this->paths = collect([]);
+        if ($this->files->isEmpty()) {
+            throw new UploadException('请上传图片');
+        }
     }
 
     public static function __callStatic($func_name = '',$arguments)
@@ -25,7 +28,7 @@ class Upload {
         if($func_name === 'file')
         {
             if (! $arguments) {
-                self::file(request()->file());
+                $arguments[0] = request()->file();
             }
 
             if($arguments[0] instanceof UploadedFile)
