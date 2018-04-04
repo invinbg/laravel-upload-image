@@ -10,9 +10,7 @@ Require the package via Composer:
 
 Finally publish the config file:
 
-```
-php artisan vendor:publish --provider="InviNBG\UploadImage\UploadImageServiceProvider"
-```
+    $ php artisan vendor:publish --provider="InviNBG\UploadImage\UploadImageServiceProvider"
 
 ### Laravel Integration
 
