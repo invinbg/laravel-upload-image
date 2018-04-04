@@ -16,13 +16,16 @@
     },
     "autoload": {
       "psr-4": {
-        "InviNBG\\": "src"
-      }
+        "InviNBG\\UploadImage\\": "src"
+      },
+      "files": [
+        "src/helpers.php"
+      ]
     },
     "extra": {
       "laravel": {
         "providers": [
-          "InviNBG\\UploadImageServiceProvider"
+          "InviNBG\\UploadImage\\UploadImageServiceProvider"
         ]
       }
     }
