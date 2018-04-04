@@ -1,0 +1,29 @@
+{
+    "name": "invinbg/laravel-upload-image",
+    "description": "Laravel Upload Image",
+    "authors": [
+        {
+            "name": "invinbg",
+            "email": "253618519@qq.com"
+        }
+    ],
+    "keywords": ["laravel", "upload", "image"],
+    "homepage": "https://github.com/invinbg/laravel-upload-image",
+    "license": "MIT",
+    "require": {
+        "php": "^7.1.3",
+        "intervention/imagecache": "^2.3"
+    },
+    "autoload": {
+      "psr-4": {
+        "InviNBG\\": "src"
+      }
+    },
+    "extra": {
+      "laravel": {
+        "providers": [
+          "InviNBG\\UploadImageServiceProvider"
+        ]
+      }
+    }
+}
