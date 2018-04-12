@@ -26,7 +26,10 @@
       "laravel": {
         "providers": [
           "InviNBG\\UploadImage\\UploadImageServiceProvider"
-        ]
+        ],
+        "aliases": {
+          "Image": "Intervention\\Image\\Facades\\Image"
+        }
       }
     }
 }
