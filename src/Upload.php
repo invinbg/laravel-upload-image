@@ -14,38 +14,46 @@ class Upload {
     protected $files;
     protected $paths;
 
-    public function __construct(Collection $files)
+    /**
+     * Upload constructor.
+     * @param array $files          上传的文件
+     * @param array $extensions     允许的后缀
+     */
+    public function __construct($files = [], array $extensions = [])
     {
-        $this->files = $files;
-        $this->paths = collect([]);
-        if ($this->files->isEmpty()) {
-            throw new UploadException('请上传图片');
+        if (! $files) {
+            $files = request()->file();
         }
+        $this->files = $files instanceof UploadedFile ? collect([$files]) : collect($files);
+        $this->paths = collect([]);
+        $this->extension($extensions);
     }
 
-    public static function __callStatic($func_name = '',$arguments)
+    /**
+     * @param string $func_name     方法名只允许为file
+     * @param $arguments
+     * @return Upload
+     * @throws UploadException
+     */
+    public static function __callStatic($func_name = '', $arguments)
     {
         if($func_name === 'file')
         {
-            if (! $arguments) {
-                $arguments[0] = request()->file();
-            }
+            $files = isset($arguments[0]) ? $arguments[0] : [];
 
-            if($arguments[0] instanceof UploadedFile)
-            {
-                $arguments[0] = [$arguments[0]];
-            }
-
-            $class = new self(collect($arguments[0]));
-            return $class->file();
+            return new self($files);
         }
         throw new UploadException($func_name.'方法不存在');
     }
 
-    protected function file()
+    /**
+     * 允许上传文件的后缀
+     * @param array $extensions     后缀名
+     * @return $this
+     */
+    public function extension(array $extensions = [])
     {
-        $this->isValid();
-        $this->check_extenstion();
+        $this->extensions = $extensions ?: $this->extensions;
         return $this;
     }
 
@@ -57,6 +65,10 @@ class Upload {
      */
     public function store($path, $options = [])
     {
+        $this->isValid();
+
+        $this->check_extenstion();
+
         $dir = Carbon::now()->format('Ymd');
         $this->files->map(function($file) use($path, $options, $dir){
             $this->paths->push($file->store($path.'/'.$dir, $options));
@@ -86,6 +98,10 @@ class Upload {
      */
     protected function isValid()
     {
+        if ($this->files->isEmpty()) {
+            throw new UploadException('请上传图片');
+        }
+
         $this->files->map(function($file){
             if(! $file->isValid() )
             {
