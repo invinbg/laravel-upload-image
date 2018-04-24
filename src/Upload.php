@@ -8,10 +8,24 @@ use Illuminate\Support\Collection;
 
 class Upload {
 
+    /**
+     * 允许上传文件后缀
+     * @var array
+     */
     public $extensions = [
         'png','jpg','jpeg','gif'
     ];
+
+    /**
+     * 待上传文件
+     * @var Illuminate\Support\Collection
+     */
     protected $files;
+
+    /**
+     * 上传后的文件位置
+     * @var Illuminate\Support\Collection
+     */
     protected $paths;
 
     /**
