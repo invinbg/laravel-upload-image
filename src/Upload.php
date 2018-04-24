@@ -109,4 +109,13 @@ class Upload {
             }
         });
     }
+
+    /**
+     * clone
+     * @return $this
+     */
+    protected function file()
+    {
+        return $this;
+    }
 }
