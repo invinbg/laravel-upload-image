@@ -84,8 +84,9 @@ class Upload {
         $this->check_extenstion();
 
         $dir = Carbon::now()->format('Ymd');
-        $this->files->map(function($file) use($path, $options, $dir){
-            $this->paths->push($file->store($path.'/'.$dir, $options));
+        $this->files->map(function($file, $key) use($path, $options, $dir) {
+            $this->paths->offsetSet($key, $file->store($path.'/'.$dir, $options));
+//            $this->paths->push($file->store($path.'/'.$dir, $options));
         });
         return $this->paths;
     }
@@ -132,4 +133,5 @@ class Upload {
     {
         return $this;
     }
+
 }
