@@ -12,8 +12,6 @@ class Medium implements FilterInterface
 
     public function applyFilter(Image $image)
     {
-        $width = $this->width;
-        $height = ceil($image->height() / ($image->width() / $width));
-        return $image->fit($width, $height);
+        return $image->widen($this->width);
     }
 }
