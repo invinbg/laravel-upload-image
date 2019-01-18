@@ -17,14 +17,20 @@ class Upload {
     ];
 
     /**
+     * 允许上传最大容量 (单位kb)
+     * @var int
+     */
+    public $maxsize = 2048;
+
+    /**
      * 待上传文件
-     * @var Illuminate\Support\Collection
+     * @var \Illuminate\Support\Collection
      */
     protected $files;
 
     /**
      * 上传后的文件位置
-     * @var Illuminate\Support\Collection
+     * @var \Illuminate\Support\Collection
      */
     protected $paths;
 
@@ -32,32 +38,17 @@ class Upload {
      * Upload constructor.
      * @param array $files          上传的文件
      * @param array $extensions     允许的后缀
+     * @param int $maxsize          最大容量
      */
-    public function __construct($files = [], array $extensions = [])
+    public function __construct($files = [], array $extensions = [], $maxsize = 0)
     {
         if (! $files) {
             $files = request()->file();
         }
         $this->files = $files instanceof UploadedFile ? collect([$files]) : collect($files);
         $this->paths = collect([]);
+        $this->maxsize($maxsize);
         $this->extension($extensions);
-    }
-
-    /**
-     * @param string $func_name     方法名只允许为file
-     * @param $arguments
-     * @return Upload
-     * @throws UploadException
-     */
-    public static function __callStatic($func_name = '', $arguments)
-    {
-        if($func_name === 'file')
-        {
-            $files = isset($arguments[0]) ? $arguments[0] : [];
-
-            return new self($files);
-        }
-        throw new UploadException($func_name.'方法不存在');
     }
 
     /**
@@ -72,39 +63,83 @@ class Upload {
     }
 
     /**
+     * 允许上传最大容量
+     * @param int $maxsize
+     * @return $this
+     */
+    public function maxsize(int $maxsize = 0)
+    {
+        $this->maxsize = $maxsize ?: $this->maxsize;
+        return $this;
+    }
+
+    /**
      * 上传
      * @param $path
      * @param array $options
      * @return false|string
      */
-    public function store($path, $options = [])
+    public function store($path, $options = []) :Collection
     {
         $this->isValid();
 
-        $this->check_extenstion();
+        $this->check();
 
         $dir = Carbon::now()->format('Ymd');
         $this->files->map(function($file, $key) use($path, $options, $dir) {
-            $this->paths->offsetSet($key, $file->store($path.'/'.$dir, $options));
-//            $this->paths->push($file->store($path.'/'.$dir, $options));
+            if(is_array($file)) {
+                $this->paths->offsetSet($key, collect());
+                foreach($file as $oneFile) {
+                    $this->paths[$key]->push($oneFile->store($path.'/'.$dir, $options));
+                }
+            } else {
+                $this->paths->offsetSet($key, $file->store($path.'/'.$dir, $options));
+            }
         });
         return $this->paths;
     }
 
     /**
-     * 验证文件后缀
+     * 验证文件
      * @throws UploadException
      */
-    protected function check_extenstion()
+    protected function check()
     {
 
         $this->files->map(function($file){
-            if (! in_array($file->extension(), $this->extensions) )
-            {
-                throw new UploadException('文件类型不允许');
+            if(is_array($file)) {
+                foreach($file as $oneFile) {
+                    if (! in_array($oneFile->extension(), $this->extensions) ) {
+                        throw new UploadException('文件类型不允许');
+                    }
+
+                    if ($oneFile->getSize() / 1024 > $this->maxsize) {
+                        throw new UploadException('文件大小超出限额');
+                    }
+                }
+            } else {
+                if (! in_array($file->extension(), $this->extensions) )
+                {
+                    throw new UploadException('文件类型不允许');
+                }
+
+                if ($file->getSize() / 1024 > $this->maxsize) {
+                    throw new UploadException('文件大小超出限额');
+                }
             }
+
         });
 
+    }
+
+    public static function getInstance($file = [])
+    {
+        return new static($file);
+    }
+
+    public static function file($file = [])
+    {
+        return self::getInstance($file);
     }
 
     /**
@@ -118,20 +153,20 @@ class Upload {
         }
 
         $this->files->map(function($file){
-            if(! $file->isValid() )
-            {
-                throw new UploadException('文件在上传过程中发生了错误');
+            if(is_array($file)) {
+                foreach($file as $oneFile) {
+                    if(! $oneFile->isValid() )
+                    {
+                        throw new UploadException('文件在上传过程中发生了错误');
+                    }
+                }
+            } else {
+                if(! $file->isValid() )
+                {
+                    throw new UploadException('文件在上传过程中发生了错误');
+                }
             }
         });
-    }
-
-    /**
-     * clone
-     * @return $this
-     */
-    protected function file()
-    {
-        return $this;
     }
 
 }
